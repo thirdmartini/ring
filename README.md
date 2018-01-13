@@ -19,7 +19,8 @@ Build Example:
 ```$ go build github.com/thirdmartini/ring/cmd/example```
 
 Run Example:
-./example --username=<your ring.com e-mail>  --password=<your ring.com password> --save-recordings=<number of recordings to save from history> 
+
+```./example --username=<your ring.com e-mail>  --password=<your ring.com password> --save-recordings=<number of recordings to save from history> ```
 
 
 
