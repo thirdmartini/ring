@@ -7,7 +7,7 @@ import "fmt"
 
 const (
 	API_BASE_URL = "https://api.ring.com"
-	API_VERSON   = "10"
+	API_VERSON   = "9"
 	API_PATH_SESSION    = "/clients_api/session"
 	API_PATH_DINGS      = "/clients_api/dings/active"
 	API_PATH_DEVICES    = "/clients_api/ring_devices"

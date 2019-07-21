@@ -2,11 +2,10 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/thirdmartini/ring"
-
 	"flag"
 	"time"
+
+	"github.com/thirdmartini/ring"
 )
 
 func main() {
@@ -21,11 +20,13 @@ func main() {
 
 	r, err := ring.New(*username, *password)
 	if err != nil {
+		fmt.Println("1:")
 		panic(err)
 	}
 
 	prof, err := r.Profile()
 	if err != nil {
+		fmt.Println("2:")
 		panic(err)
 	}
 

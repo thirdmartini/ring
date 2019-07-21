@@ -4,15 +4,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
-	"strconv"
-	"strings"
-	"time"
 	"os"
-	"io"
+	"strconv"
+	"time"
 )
 
 const (
@@ -20,6 +18,8 @@ const (
 	PermissionError   = "no permissions"
 	RateLimited       = "api rate limit exceeded"
 )
+
+var hardwareId = "A9118CAB-A774-40B7-9A83-EA16AE901B6F"
 
 type Api struct {
 	username string
@@ -88,6 +88,7 @@ func (a *Api) getRaw(kind string, path string, vals *url.Values) ([]byte, error)
 	return bodyText, nil
 }
 
+
 func (a *Api) get(kind string, url string, vals *url.Values, inter interface{}) error {
 	body, err := a.getRaw(kind, url, vals)
 	if err != nil {
@@ -96,8 +97,6 @@ func (a *Api) get(kind string, url string, vals *url.Values, inter interface{}) 
 
 	err = json.Unmarshal(body, inter)
 	if err != nil {
-		//log.Println("Decode:1", string(body))
-		//log.Println("Decode:2", err)
 		return err
 	}
 
@@ -105,43 +104,7 @@ func (a *Api) get(kind string, url string, vals *url.Values, inter interface{}) 
 }
 
 func (a *Api) authenticate() (*Session, error) {
-	client := &http.Client{}
-
-	v := url.Values{}
-	v.Set("device[os]", "osx")
-	v.Set("device[metadata][app_version]", "1.0.0")
-	v.Set("device[metadata][app_instalation_date]", "")
-	v.Set("device[hardware_id]", "A9118CAB-E374-40B7-9A83-EA16AE901B6F")  // uuidgen
-	v.Set("device[app_brand]", "ring")
-	v.Set("device[metadata][device_model]", "go-ring")
-	v.Set("api_version", API_VERSON)
-
-	req, err := http.NewRequest("POST", API_BASE_URL+API_PATH_SESSION, strings.NewReader(v.Encode()))
-	req.SetBasicAuth(a.username, a.password)
-
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	if err = checkError(resp); err != nil {
-		return nil, err
-	}
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	session := Session{}
-	err = json.Unmarshal(body, &session)
-	if err != nil {
-		log.Println("Decode", string(body))
-		return nil, err
-	}
-
-	return &session, nil
+	return a.getToken()
 }
 
 // Session returns Session information
@@ -200,7 +163,7 @@ func (a *Api) Recording(id uint64, saveFile string) error {
 
 	// Create the file
 	out, err := os.Create(saveFile)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 	defer out.Close()
@@ -211,14 +174,14 @@ func (a *Api) Recording(id uint64, saveFile string) error {
 
 	link := fmt.Sprintf(API_BASE_URL+API_PATH_RECORDINGS+"?%s", strconv.FormatUint(id, 10), v.Encode())
 
-	resp,err := http.Get(link)
+	resp, err := http.Get(link)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(out, resp.Body)
-	if err != nil  {
+	if err != nil {
 		return err
 	}
 	return nil
